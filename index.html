@@ -1,0 +1,291 @@
+<html>
+  <head>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+    <link
+      rel="stylesheet"
+      as="style"
+      onload="this.rel='stylesheet'"
+      href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900"
+    />
+
+    <title>Galileo Design</title>
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64," />
+
+    <style>
+      /* Remove arrows from number input fields */
+      input[type="number"]::-webkit-outer-spin-button,
+      input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield; /* For Firefox */
+      }
+
+      /* Remove border and background from the text inputs */
+      input[type="number"] {
+        border: none;
+        background-color: transparent;
+      }
+
+      /* Add focus styling to remove the outline */
+      input[type="number"]:focus {
+        outline: none;
+      }
+
+      /* Center the app and set width */
+      .app-container {
+        width: 66.66%; /* Takes up two-thirds of the screen width */
+        max-width: 800px;
+        margin: 0 auto;
+        padding-bottom: 40px;
+        background-color: white;
+        min-height: 100vh; /* Extends the white background to cover the entire screen */
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+      }
+
+      /* Reduce padding between title and profit margin input */
+      .header-section {
+        padding-top: 20px;
+        padding-bottom: 10px;
+      }
+
+      /* Increase the size of the top header by 50% */
+      .header-section h2 {
+        font-size: 2.25rem; /* 50% larger than the original size */
+      }
+
+      /* Styles for attribute selector */
+      .attribute-selector-container {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        margin-bottom: 20px;
+        gap: 5px;
+        padding-left: 8px; /* Align the buttons and text inside */
+      }
+
+      /* Make sure "Number of Attributes:" text aligns with attribute names */
+      .attribute-selector-label {
+        margin-left: 8px;
+        font-size: 16px;
+      }
+
+      /* Buttons row */
+      .attribute-selector {
+        display: flex;
+        gap: 10px;
+        padding-left: 8px; /* Added padding to align the buttons with the text */
+      }
+
+      .attribute-selector button {
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: 1px solid #338ae6;
+        background-color: #fff;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        color: #338ae6;
+        transition: background-color 0.2s ease;
+      }
+
+      .attribute-selector button.active {
+        background-color: #338ae6;
+        color: white;
+      }
+
+      .attribute-selector button:hover {
+        background-color: #cce6ff;
+      }
+
+      /* Editable attribute names */
+      .editable-attribute {
+        font-weight: 500;
+        border-bottom: 1px dashed #ccc;
+        display: inline-block;
+        cursor: text;
+      }
+
+      /* Align profit margin input with other text boxes */
+      .profit-margin-container {
+        display: flex;
+        justify-content: start;
+        align-items: center;
+        padding-left: 8px; /* Align with text */
+        margin-bottom: 20px;
+      }
+
+      /* Align profit margin input box to match others */
+      .profit-margin-input {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-left: 8px;
+      }
+    </style>
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <script>
+      let currentAttributeCount = 3; // Default number of attributes
+
+      // Update the slider and unit cost, and recalculate the total project cost
+      function updateSlider(sliderId, outputId, unitCostId, totalId) {
+        const slider = document.getElementById(sliderId);
+        const output = document.getElementById(outputId);
+        const unitCost = document.getElementById(unitCostId).value;
+        const total = slider.value * unitCost;
+
+        output.innerHTML = slider.value; // Update the count value
+        document.getElementById(totalId).innerHTML = `$${total.toFixed(2)}`; // Update the total price
+
+        calculateTotalProjectCost(); // Recalculate total project cost
+      }
+
+      // Function to increase or decrease the unit cost or profit margin
+      function changeUnitCost(inputId, isIncrement) {
+        const input = document.getElementById(inputId);
+        let currentValue = parseFloat(input.value) || 0;
+
+        // Increase or decrease by 5
+        if (isIncrement) {
+          currentValue += 5;
+        } else {
+          currentValue -= 5;
+        }
+
+        // Ensure the value doesn't go below 0
+        if (currentValue < 0) {
+          currentValue = 0;
+        }
+
+        input.value = currentValue;
+        input.dispatchEvent(new Event('change')); // Trigger the change event to recalculate totals
+      }
+
+      // Calculate the total project cost by summing all the individual totals
+      function calculateTotalProjectCost() {
+        let totalProjectPrice = 0;
+        for (let i = 1; i <= currentAttributeCount; i++) {
+          const total = parseFloat(document.getElementById('total' + i).innerText.replace('$', '')) || 0;
+          totalProjectPrice += total;
+        }
+
+        // Apply the profit margin if specified
+        const profitMargin = parseFloat(document.getElementById('profitMargin').value) || 0;
+        const profit = (totalProjectPrice * profitMargin) / 100;
+        const totalProjectCost = totalProjectPrice + profit;
+
+        document.getElementById('totalProjectPrice').innerText = `$${totalProjectPrice.toFixed(2)}`;
+        document.getElementById('profit').innerText = `$${profit.toFixed(2)}`;
+        document.getElementById('grandTotal').innerText = `$${totalProjectCost.toFixed(2)}`;
+      }
+
+      // Function to change the number of attributes dynamically
+      function changeAttributeCount(count) {
+        currentAttributeCount = count;
+
+        // Remove active class from all buttons
+        const buttons = document.querySelectorAll('.attribute-selector button');
+        buttons.forEach(button => button.classList.remove('active'));
+
+        // Add active class to clicked button
+        document.getElementById('attribute-btn-' + count).classList.add('active');
+
+        // Update the displayed attributes
+        updateAttributesDisplay();
+      }
+
+      // Function to update the displayed attributes based on selected count
+      function updateAttributesDisplay() {
+        const attributesContainer = document.getElementById('attributes-container');
+        attributesContainer.innerHTML = '';
+
+        for (let i = 1; i <= currentAttributeCount; i++) {
+          attributesContainer.innerHTML += `
+            <div class="w-full flex justify-between items-center p-4">
+              <p contenteditable="true" class="editable-attribute text-[#111418] text-base font-medium leading-normal">Attribute ${i}</p>
+              <div class="flex items-center gap-2">
+                <label class="text-[#111418] text-sm font-normal leading-normal">Unit cost: $</label>
+                <div class="flex items-center border border-gray-300 rounded p-1">
+                  <button onclick="changeUnitCost('unitCost${i}', false)" class="text-sm px-2 text-[#111418] bg-gray-200 border border-gray-300 rounded-l hover:bg-gray-300">-</button>
+                  <input type="number" id="unitCost${i}" value="5" class="text-[#111418] text-sm font-normal leading-normal w-12 text-center focus:outline-none" onchange="updateSlider('slider${i}', 'sliderValue${i}', 'unitCost${i}', 'total${i}')"/>
+                  <button onclick="changeUnitCost('unitCost${i}', true)" class="text-sm px-2 text-[#111418] bg-gray-200 border border-gray-300 rounded-r hover:bg-gray-300">+</button>
+                </div>
+                <span>|</span>
+                <p id="total${i}" class="text-[#111418] text-sm font-normal leading-normal">$0.00</p>
+              </div>
+            </div>
+            <div class="w-full flex justify-between items-center px-4 pb-4">
+              <p class="text-[#111418] text-sm font-normal leading-normal">0</p>
+              <input type="range" id="slider${i}" min="0" max="30" value="0" oninput="updateSlider('slider${i}', 'sliderValue${i}', 'unitCost${i}', 'total${i}')" class="flex-1 mx-4"/>
+              <p id="sliderValue${i}" class="text-[#111418] text-sm font-normal leading-normal">0</p>
+            </div>`;
+        }
+
+        // Recalculate the totals after updating the attribute display
+        calculateTotalProjectCost();
+      }
+
+      // Initialize the attribute display on page load
+      document.addEventListener('DOMContentLoaded', () => {
+        updateAttributesDisplay(); // Show initial attributes
+      });
+    </script>
+  </head>
+  <body class="bg-gray-100">
+    <div class="app-container">
+      <div class="header-section">
+        <!-- Increased size of top row by 50% -->
+        <h2 class="text-[#111418] text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Project Pricing Calculator</h2>
+      </div>
+
+      <!-- Attribute Selector Buttons -->
+      <div class="attribute-selector-container">
+        <span class="attribute-selector-label text-[#111418] text-base font-medium">Number of attributes:</span>
+        <div class="attribute-selector">
+          <button id="attribute-btn-1" class="active" onclick="changeAttributeCount(1)">1</button>
+          <button id="attribute-btn-2" onclick="changeAttributeCount(2)">2</button>
+          <button id="attribute-btn-3" onclick="changeAttributeCount(3)">3</button>
+          <button id="attribute-btn-4" onclick="changeAttributeCount(4)">4</button>
+          <button id="attribute-btn-5" onclick="changeAttributeCount(5)">5</button>
+        </div>
+      </div>
+
+      <!-- Profit Margin Input -->
+      <div class="profit-margin-container">
+        <label class="text-[#111418] text-sm font-normal leading-normal">Profit Margin:</label>
+        <div class="profit-margin-input">
+          <div class="flex items-center border border-gray-300 rounded p-1">
+            <button onclick="changeUnitCost('profitMargin', false)" class="text-sm px-2 text-[#111418] bg-gray-200 border border-gray-300 rounded-l hover:bg-gray-300">-</button>
+            <input type="number" id="profitMargin" value="0" class="text-[#111418] text-sm font-normal leading-normal w-12 text-center focus:outline-none" onchange="calculateTotalProjectCost()"/>
+            <button onclick="changeUnitCost('profitMargin', true)" class="text-sm px-2 text-[#111418] bg-gray-200 border border-gray-300 rounded-r hover:bg-gray-300">+</button>
+          </div>
+          <span>%</span>
+        </div>
+      </div>
+
+      <!-- Attributes Container -->
+      <div id="attributes-container"></div>
+
+      <!-- Total Project Price and Profit Section -->
+      <div class="flex flex-col gap-2 bg-white px-4 min-h-14 justify-between">
+        <div class="flex justify-between">
+          <p class="text-[#111418] text-base font-normal leading-normal flex-1 truncate">Total Project Price</p>
+          <div class="shrink-0"><p id="totalProjectPrice" class="text-[#111418] text-base font-normal leading-normal">$0.00</p></div>
+        </div>
+        <div class="flex justify-between">
+          <p class="text-[#111418] text-base font-normal leading-normal flex-1 truncate">Profit</p>
+          <div class="shrink-0"><p id="profit" class="text-[#111418] text-base font-normal leading-normal">$0.00</p></div>
+        </div>
+        <div class="flex justify-between">
+          <p class="text-[#111418] text-base font-bold leading-normal flex-1 truncate">Total Project Cost</p>
+          <div class="shrink-0"><p id="grandTotal" class="text-[#111418] text-base font-bold leading-normal">$0.00</p></div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
