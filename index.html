@@ -139,6 +139,11 @@
         justify-content: center;
         margin-top: 20px;
       }
+
+      /* Ensure the proposal section prints correctly */
+      #proposal-template {
+        width: 100%;
+      }
     </style>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -306,11 +311,11 @@
       function downloadProposal() {
         generateProposal(); // Populate the proposal with current data
 
-        const proposalContent = document.getElementById('proposal-template').innerHTML;
-
         const element = document.createElement('div');
-        element.innerHTML = proposalContent;
+        const proposalContent = document.getElementById('proposal-template').cloneNode(true);
+        proposalContent.style.display = 'block'; // Ensure it's visible when cloning
 
+        element.appendChild(proposalContent);
         html2pdf().from(element).save('project-proposal.pdf');
       }
 
