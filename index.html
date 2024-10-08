@@ -9,7 +9,7 @@
     />
 
     <title>Pricing Calculator</title>
-    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64," />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
 
     <style>
       /* Remove arrows from number input fields */
@@ -112,9 +112,8 @@
       /* Align profit margin input with other text boxes */
       .profit-margin-container {
         display: flex;
-        justify-content: start;
+        justify-content: flex-end; /* Align it to the right */
         align-items: center;
-        padding-left: 8px; /* Align with text */
         margin-bottom: 20px;
       }
 
@@ -123,7 +122,7 @@
         display: flex;
         align-items: center;
         gap: 5px;
-        margin-left: 8px;
+        margin-right: 8px;
       }
     </style>
 
@@ -131,8 +130,9 @@
 
     <script>
       let currentAttributeCount = 3; // Default number of attributes
+      let attributeNames = {}; // Object to store attribute names
 
-      // Update the slider and unit cost, and recalculate the total project cost
+      // Function to update the slider and unit cost, and recalculate the total project cost
       function updateSlider(sliderId, outputId, unitCostId, totalId) {
         const slider = document.getElementById(sliderId);
         const output = document.getElementById(outputId);
@@ -186,6 +186,12 @@
 
       // Function to change the number of attributes dynamically
       function changeAttributeCount(count) {
+        // Update attribute names to store the current ones before changing the count
+        for (let i = 1; i <= currentAttributeCount; i++) {
+          const attributeElement = document.getElementById(`attributeName${i}`);
+          attributeNames[i] = attributeElement ? attributeElement.innerText : `Attribute ${i}`;
+        }
+
         currentAttributeCount = count;
 
         // Remove active class from all buttons
@@ -205,9 +211,10 @@
         attributesContainer.innerHTML = '';
 
         for (let i = 1; i <= currentAttributeCount; i++) {
+          const attributeName = attributeNames[i] || `Attribute ${i}`; // Get existing name or default
           attributesContainer.innerHTML += `
             <div class="w-full flex justify-between items-center p-4">
-              <p contenteditable="true" class="editable-attribute text-[#111418] text-base font-medium leading-normal">Attribute ${i}</p>
+              <p contenteditable="true" id="attributeName${i}" class="editable-attribute text-[#111418] text-base font-medium leading-normal">${attributeName}</p>
               <div class="flex items-center gap-2">
                 <label class="text-[#111418] text-sm font-normal leading-normal">Unit cost: $</label>
                 <div class="flex items-center border border-gray-300 rounded p-1">
