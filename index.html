@@ -88,7 +88,7 @@
         padding-left: 8px; /* Added padding to align the buttons with the text */
       }
 
-      .attribute-selector button {
+      .attribute-selector button, .download-proposal-btn {
         padding: 10px 20px;
         border-radius: 8px;
         border: 1px solid #338ae6;
@@ -100,12 +100,12 @@
         transition: background-color 0.2s ease;
       }
 
-      .attribute-selector button.active {
+      .attribute-selector button.active, .download-proposal-btn.active {
         background-color: #338ae6;
         color: white;
       }
 
-      .attribute-selector button:hover {
+      .attribute-selector button:hover, .download-proposal-btn:hover {
         background-color: #cce6ff;
       }
 
@@ -132,9 +132,18 @@
         gap: 5px;
         margin-right: 8px;
       }
+
+      /* Style for download proposal button */
+      .download-proposal-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+      }
     </style>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Include html2pdf.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
 
     <script>
       let currentAttributeCount = 3; // Default number of attributes
@@ -269,6 +278,42 @@
         calculateTotalProjectCost();
       }
 
+      // Function to generate the proposal content for the PDF
+      function generateProposal() {
+        const numAttributes = currentAttributeCount;
+        const totalPrice = document.getElementById('totalProjectPrice').innerText;
+        const profit = document.getElementById('profit').innerText;
+
+        document.getElementById('proposal-attributes').innerText = numAttributes;
+        document.getElementById('proposal-price').innerText = totalPrice;
+        document.getElementById('proposal-profit').innerText = profit;
+
+        const itemsList = document.getElementById('proposal-items');
+        itemsList.innerHTML = '';
+
+        for (let i = 1; i <= numAttributes; i++) {
+          const attributeName = document.getElementById(`attributeName${i}`).innerText;
+          const unitCost = document.getElementById(`unitCost${i}`).value;
+          const sliderValue = document.getElementById(`slider${i}`).value;
+
+          const listItem = document.createElement('li');
+          listItem.innerText = `${attributeName}: ${sliderValue} units @ $${unitCost} each`;
+          itemsList.appendChild(listItem);
+        }
+      }
+
+      // Function to download the proposal as a PDF using html2pdf.js
+      function downloadProposal() {
+        generateProposal(); // Populate the proposal with current data
+
+        const proposalContent = document.getElementById('proposal-template').innerHTML;
+
+        const element = document.createElement('div');
+        element.innerHTML = proposalContent;
+
+        html2pdf().from(element).save('project-proposal.pdf');
+      }
+
       // Initialize the attribute display on page load
       document.addEventListener('DOMContentLoaded', () => {
         updateAttributesDisplay(); // Show initial attributes
@@ -325,6 +370,28 @@
           <div class="shrink-0"><p id="grandTotal" class="text-[#111418] text-base font-bold leading-normal">$0.00</p></div>
         </div>
       </div>
+
+      <!-- Download Proposal Button -->
+      <div class="download-proposal-container">
+        <button class="download-proposal-btn" onclick="downloadProposal()">Download Proposal</button>
+      </div>
+    </div>
+
+    <!-- Proposal Template (hidden) -->
+    <div id="proposal-template" style="display: none;">
+      <h1>Project Proposal</h1>
+      <p>Dear Client,</p>
+      <p>We are pleased to provide you with the following project estimate:</p>
+
+      <h2>Project Details</h2>
+      <p><strong>Number of attributes:</strong> <span id="proposal-attributes"></span></p>
+      <p><strong>Total Price:</strong> <span id="proposal-price"></span></p>
+      <p><strong>Profit Margin:</strong> <span id="proposal-profit"></span></p>
+
+      <h2>Items Breakdown</h2>
+      <ul id="proposal-items"></ul>
+
+      <p>We look forward to working with you!</p>
     </div>
   </body>
 </html>
