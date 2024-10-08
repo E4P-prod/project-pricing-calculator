@@ -139,11 +139,6 @@
         justify-content: center;
         margin-top: 20px;
       }
-
-      /* Ensure the proposal section prints correctly */
-      #proposal-template {
-        width: 100%;
-      }
     </style>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -311,11 +306,11 @@
       function downloadProposal() {
         generateProposal(); // Populate the proposal with current data
 
-        const element = document.createElement('div');
-        const proposalContent = document.getElementById('proposal-template').cloneNode(true);
-        proposalContent.style.display = 'block'; // Ensure it's visible when cloning
+        const proposalContent = document.getElementById('proposal-template').innerHTML;
 
-        element.appendChild(proposalContent);
+        const element = document.createElement('div');
+        element.innerHTML = proposalContent;
+
         html2pdf().from(element).save('project-proposal.pdf');
       }
 
@@ -384,35 +379,19 @@
 
     <!-- Proposal Template (hidden) -->
     <div id="proposal-template" style="display: none;">
-      <h1 style="text-align: center;">Project Proposal and Agreement</h1>
+      <h1>Project Proposal</h1>
+      <p>Dear Client,</p>
+      <p>We are pleased to provide you with the following project estimate:</p>
 
-      <p><strong>Client:</strong> <span id="client-name">Zoe Fox</span></p>
-      <p><strong>Service Provider:</strong> <span id="service-provider">Aadil Verma</span></p>
-      <p><strong>Date:</strong> <span id="proposal-date">08/10/2024</span></p>
-      <p><strong>Project Title:</strong> <span id="project-title">Podcast Growth and Social Media Content Strategy</span></p>
+      <h2>Project Details</h2>
+      <p><strong>Number of attributes:</strong> <span id="proposal-attributes"></span></p>
+      <p><strong>Total Price:</strong> <span id="proposal-price"></span></p>
+      <p><strong>Profit Margin:</strong> <span id="proposal-profit"></span></p>
 
-      <h2>1. Scope of Work</h2>
-      <p>This section outlines the services provided by <strong>Aadil Verma</strong> for <strong>Zoe Fox</strong>:</p>
-      <ul id="proposal-items">
-        <!-- Dynamically generated list of attributes -->
-      </ul>
+      <h2>Items Breakdown</h2>
+      <ul id="proposal-items"></ul>
 
-      <h2>2. Pricing and Payment Terms</h2>
-      <p><strong>Total Project Price:</strong> <span id="proposal-price">$0.00</span></p>
-      <p><strong>Profit Margin:</strong> <span id="proposal-profit">$0.00</span></p>
-      <p>The total fee is payable in two installments: 50% at the start and 50% at the end of the project.</p>
-
-      <h2>3. Legal Clauses</h2>
-      <ul>
-        <li><strong>Intellectual Property:</strong> All content created will belong to the Client upon full payment.</li>
-        <li><strong>Confidentiality:</strong> Both parties agree to confidentiality for all project-related information.</li>
-        <li><strong>Termination:</strong> Either party may terminate this agreement with a 14-day written notice.</li>
-        <li><strong>Dispute Resolution:</strong> Mediation will be attempted before legal action in the event of a dispute.</li>
-      </ul>
-
-      <h2>4. Signatures</h2>
-      <p><strong>Client Name:</strong> <span id="client-signature">__________________________</span></p>
-      <p><strong>Service Provider Name:</strong> <span id="provider-signature">__________________________</span></p>
+      <p>We look forward to working with you!</p>
     </div>
   </body>
 </html>
