@@ -131,6 +131,9 @@
     <script>
       let currentAttributeCount = 3; // Default number of attributes
       let attributeNames = {}; // Object to store attribute names
+      let sliderValues = {}; // Object to store slider values
+      let unitCosts = {}; // Object to store unit costs
+      let profitMarginValue = 0; // Store the profit margin value
 
       // Function to update the slider and unit cost, and recalculate the total project cost
       function updateSlider(sliderId, outputId, unitCostId, totalId) {
@@ -141,6 +144,9 @@
 
         output.innerHTML = slider.value; // Update the count value
         document.getElementById(totalId).innerHTML = `$${total.toFixed(2)}`; // Update the total price
+
+        // Update stored slider value
+        sliderValues[sliderId.replace('slider', '')] = slider.value;
 
         calculateTotalProjectCost(); // Recalculate total project cost
       }
@@ -163,7 +169,18 @@
         }
 
         input.value = currentValue;
+
+        // Update stored unit cost
+        unitCosts[inputId.replace('unitCost', '')] = currentValue;
+
         input.dispatchEvent(new Event('change')); // Trigger the change event to recalculate totals
+      }
+
+      // Store the profit margin value when it changes
+      function updateProfitMargin() {
+        const profitMargin = document.getElementById('profitMargin').value;
+        profitMarginValue = profitMargin;
+        calculateTotalProjectCost();
       }
 
       // Calculate the total project cost by summing all the individual totals
@@ -175,8 +192,7 @@
         }
 
         // Apply the profit margin if specified
-        const profitMargin = parseFloat(document.getElementById('profitMargin').value) || 0;
-        const profit = (totalProjectPrice * profitMargin) / 100;
+        const profit = (totalProjectPrice * profitMarginValue) / 100;
         const totalProjectCost = totalProjectPrice + profit;
 
         document.getElementById('totalProjectPrice').innerText = `$${totalProjectPrice.toFixed(2)}`;
@@ -186,10 +202,15 @@
 
       // Function to change the number of attributes dynamically
       function changeAttributeCount(count) {
-        // Update attribute names to store the current ones before changing the count
+        // Update attribute names, slider values, and unit costs before changing the count
         for (let i = 1; i <= currentAttributeCount; i++) {
           const attributeElement = document.getElementById(`attributeName${i}`);
+          const sliderElement = document.getElementById(`slider${i}`);
+          const unitCostElement = document.getElementById(`unitCost${i}`);
+          
           attributeNames[i] = attributeElement ? attributeElement.innerText : `Attribute ${i}`;
+          sliderValues[i] = sliderElement ? sliderElement.value : 0;
+          unitCosts[i] = unitCostElement ? unitCostElement.value : 5;
         }
 
         currentAttributeCount = count;
@@ -212,6 +233,9 @@
 
         for (let i = 1; i <= currentAttributeCount; i++) {
           const attributeName = attributeNames[i] || `Attribute ${i}`; // Get existing name or default
+          const sliderValue = sliderValues[i] || 0; // Get existing slider value or default to 0
+          const unitCost = unitCosts[i] || 5; // Get existing unit cost or default to 5
+          
           attributesContainer.innerHTML += `
             <div class="w-full flex justify-between items-center p-4">
               <p contenteditable="true" id="attributeName${i}" class="editable-attribute text-[#111418] text-base font-medium leading-normal">${attributeName}</p>
@@ -219,7 +243,7 @@
                 <label class="text-[#111418] text-sm font-normal leading-normal">Unit cost: $</label>
                 <div class="flex items-center border border-gray-300 rounded p-1">
                   <button onclick="changeUnitCost('unitCost${i}', false)" class="text-sm px-2 text-[#111418] bg-gray-200 border border-gray-300 rounded-l hover:bg-gray-300">-</button>
-                  <input type="number" id="unitCost${i}" value="5" class="text-[#111418] text-sm font-normal leading-normal w-12 text-center focus:outline-none" onchange="updateSlider('slider${i}', 'sliderValue${i}', 'unitCost${i}', 'total${i}')"/>
+                  <input type="number" id="unitCost${i}" value="${unitCost}" class="text-[#111418] text-sm font-normal leading-normal w-12 text-center focus:outline-none" onchange="updateSlider('slider${i}', 'sliderValue${i}', 'unitCost${i}', 'total${i}')"/>
                   <button onclick="changeUnitCost('unitCost${i}', true)" class="text-sm px-2 text-[#111418] bg-gray-200 border border-gray-300 rounded-r hover:bg-gray-300">+</button>
                 </div>
                 <span>|</span>
@@ -228,8 +252,8 @@
             </div>
             <div class="w-full flex justify-between items-center px-4 pb-4">
               <p class="text-[#111418] text-sm font-normal leading-normal">0</p>
-              <input type="range" id="slider${i}" min="0" max="30" value="0" oninput="updateSlider('slider${i}', 'sliderValue${i}', 'unitCost${i}', 'total${i}')" class="flex-1 mx-4"/>
-              <p id="sliderValue${i}" class="text-[#111418] text-sm font-normal leading-normal">0</p>
+              <input type="range" id="slider${i}" min="0" max="30" value="${sliderValue}" oninput="updateSlider('slider${i}', 'sliderValue${i}', 'unitCost${i}', 'total${i}')" class="flex-1 mx-4"/>
+              <p id="sliderValue${i}" class="text-[#111418] text-sm font-normal leading-normal">${sliderValue}</p>
             </div>`;
         }
 
@@ -268,7 +292,7 @@
         <div class="profit-margin-input">
           <div class="flex items-center border border-gray-300 rounded p-1">
             <button onclick="changeUnitCost('profitMargin', false)" class="text-sm px-2 text-[#111418] bg-gray-200 border border-gray-300 rounded-l hover:bg-gray-300">-</button>
-            <input type="number" id="profitMargin" value="0" class="text-[#111418] text-sm font-normal leading-normal w-12 text-center focus:outline-none" onchange="calculateTotalProjectCost()"/>
+            <input type="number" id="profitMargin" value="0" class="text-[#111418] text-sm font-normal leading-normal w-12 text-center focus:outline-none" onchange="updateProfitMargin()"/>
             <button onclick="changeUnitCost('profitMargin', true)" class="text-sm px-2 text-[#111418] bg-gray-200 border border-gray-300 rounded-r hover:bg-gray-300">+</button>
           </div>
           <span>%</span>
