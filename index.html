@@ -204,18 +204,25 @@
       function calculateTotalProjectCost() {
         let totalProjectPrice = 0;
         for (let i = 1; i <= currentAttributeCount; i++) {
-          const total = parseFloat(document.getElementById('total' + i).innerText.replace('$', '')) || 0;
-          totalProjectPrice += total;
+            const total = parseFloat(document.getElementById('total' + i).innerText.replace('$', '')) || 0;
+            totalProjectPrice += total;
         }
-
-        // Apply the profit margin if specified
-        const profit = (totalProjectPrice * profitMarginValue) / 100;
-        const totalProjectCost = totalProjectPrice + profit;
-
+    
+        // Calculate the final price based on the profit margin
+        let finalPrice;
+        if (profitMarginValue > 0) {
+            finalPrice = totalProjectPrice / (1 - (profitMarginValue / 100));
+        } else {
+            finalPrice = totalProjectPrice;
+        }
+    
+        const profit = finalPrice - totalProjectPrice;
+    
         document.getElementById('totalProjectPrice').innerText = `$${totalProjectPrice.toFixed(2)}`;
         document.getElementById('profit').innerText = `$${profit.toFixed(2)}`;
-        document.getElementById('grandTotal').innerText = `$${totalProjectCost.toFixed(2)}`;
-      }
+        document.getElementById('grandTotal').innerText = `$${finalPrice.toFixed(2)}`;
+    }
+
 
       // Function to change the number of attributes dynamically
       function changeAttributeCount(count) {
