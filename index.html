@@ -117,6 +117,86 @@
         cursor: text;
       }
 
+      /* Frequent attribute buttons */
+      .frequent-btn {
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid #e5e7eb;
+        background-color: #f9fafb;
+        cursor: pointer;
+        font-size: 12px;
+        color: #374151;
+        transition: all 0.2s ease;
+        position: relative;
+        margin-left: 8px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        height: 24px;
+      }
+
+      .frequent-btn:hover {
+        background-color: #f3f4f6;
+        border-color: #d1d5db;
+      }
+
+      /* Frequent count buttons */
+      .frequent-count-btn {
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid #FFB366;
+        background-color: #FFF3E6;
+        cursor: pointer;
+        font-size: 12px;
+        color: #374151;
+        transition: all 0.2s ease;
+        position: relative;
+        margin-left: 4px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        height: 24px;
+      }
+
+      .frequent-count-btn:hover {
+        background-color: #FFE0B3;
+        border-color: #FF9933;
+      }
+
+      /* Frequent cost buttons */
+      .frequent-cost-btn {
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid #66B3FF;
+        background-color: #E6F2FF;
+        cursor: pointer;
+        font-size: 12px;
+        color: #374151;
+        transition: all 0.2s ease;
+        position: relative;
+        margin-left: 4px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        height: 24px;
+      }
+
+      .frequent-cost-btn:hover {
+        background-color: #B3D9FF;
+        border-color: #3399FF;
+      }
+
+      .frequent-label {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        font-size: 8px;
+        font-family: 'Noto Sans', sans-serif;
+        color: #6b7280;
+        background-color: white;
+        padding: 1px 3px;
+        border-radius: 3px;
+      }
+
+      .attribute-name-container {
+        display: flex;
+        align-items: center;
+      }
+
       /* Align profit margin input with other text boxes */
       .profit-margin-container {
         display: flex;
@@ -139,6 +219,14 @@
         justify-content: center;
         margin-top: 20px;
       }
+
+      /* Container for unit cost and buttons */
+      .unit-cost-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+      }
     </style>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -151,6 +239,64 @@
       let sliderValues = {}; // Object to store slider values
       let unitCosts = {}; // Object to store unit costs
       let profitMarginValue = 0; // Store the profit margin value
+
+      // Frequent attribute names and their costs
+      const frequentAttributes = {
+        1: { 
+          name: "Long Form Video", 
+          cost: 25,
+          counts: [4, 8, 10]
+        },
+        2: { 
+          name: "Short Form Video", 
+          cost: 12,
+          counts: [12, 24, 30, 50]
+        },
+        3: { 
+          name: "Thumbnail", 
+          cost: 12,
+          counts: [4, 8, 10]
+        },
+        4: { name: "Strategy", cost: 500 },
+        5: { name: "Production", cost: 500 }
+      };
+
+      // Function to set frequent total cost
+      function setFrequentTotalCost(targetCost) {
+        const currentTotalPrice = parseFloat(document.getElementById('totalProjectPrice').innerText.replace('$', ''));
+        if (currentTotalPrice < targetCost) {
+          // Calculate required profit margin to reach target cost
+          const newProfitMargin = ((targetCost - currentTotalPrice) / targetCost) * 100;
+          
+          // Update profit margin input
+          document.getElementById('profitMargin').value = newProfitMargin.toFixed(2);
+          updateProfitMargin();
+        }
+      }
+
+      // Function to set frequent attribute name and cost
+      function setFrequentAttribute(index, name, cost) {
+        const attributeElement = document.getElementById(`attributeName${index}`);
+        const unitCostElement = document.getElementById(`unitCost${index}`);
+        
+        if (attributeElement && unitCostElement) {
+          attributeElement.innerText = name;
+          unitCostElement.value = cost;
+          unitCosts[index] = cost;
+          
+          // Trigger recalculation
+          updateSlider(`slider${index}`, `sliderValue${index}`, `unitCost${index}`, `total${index}`);
+        }
+      }
+
+      // Function to set frequent count
+      function setFrequentCount(index, count) {
+        const slider = document.getElementById(`slider${index}`);
+        if (slider) {
+          slider.value = count;
+          updateSlider(`slider${index}`, `sliderValue${index}`, `unitCost${index}`, `total${index}`);
+        }
+      }
 
       // Function to update the slider and unit cost, and recalculate the total project cost
       function updateSlider(sliderId, outputId, unitCostId, totalId) {
@@ -221,8 +367,7 @@
         document.getElementById('totalProjectPrice').innerText = `$${totalProjectPrice.toFixed(2)}`;
         document.getElementById('profit').innerText = `$${profit.toFixed(2)}`;
         document.getElementById('grandTotal').innerText = `$${finalPrice.toFixed(2)}`;
-    }
-
+      }
 
       // Function to change the number of attributes dynamically
       function changeAttributeCount(count) {
@@ -260,18 +405,33 @@
           const sliderValue = sliderValues[i] || 0; // Get existing slider value or default to 0
           const unitCost = unitCosts[i] || 5; // Get existing unit cost or default to 5
           
+          const frequentButtonHtml = i <= 5 ? `
+            <button class="frequent-btn" onclick="setFrequentAttribute(${i}, '${frequentAttributes[i].name}', ${frequentAttributes[i].cost})">
+              ${frequentAttributes[i].name}
+              <span class="frequent-label">Frequent</span>
+            </button>
+            ${i <= 3 ? frequentAttributes[i].counts.map(count => 
+              `<button class="frequent-count-btn" onclick="setFrequentCount(${i}, ${count})">${count}</button>`
+            ).join('') : ''}
+          ` : '';
+          
           attributesContainer.innerHTML += `
             <div class="w-full flex justify-between items-center p-4">
-              <p contenteditable="true" id="attributeName${i}" class="editable-attribute text-[#111418] text-base font-medium leading-normal">${attributeName}</p>
-              <div class="flex items-center gap-2">
-                <label class="text-[#111418] text-sm font-normal leading-normal">Unit cost: $</label>
-                <div class="flex items-center border border-gray-300 rounded p-1">
-                  <button onclick="changeUnitCost('unitCost${i}', false)" class="text-sm px-2 text-[#111418] bg-gray-200 border border-gray-300 rounded-l hover:bg-gray-300">-</button>
-                  <input type="number" id="unitCost${i}" value="${unitCost}" class="text-[#111418] text-sm font-normal leading-normal w-12 text-center focus:outline-none" onchange="updateSlider('slider${i}', 'sliderValue${i}', 'unitCost${i}', 'total${i}')"/>
-                  <button onclick="changeUnitCost('unitCost${i}', true)" class="text-sm px-2 text-[#111418] bg-gray-200 border border-gray-300 rounded-r hover:bg-gray-300">+</button>
+              <div class="attribute-name-container">
+                <p contenteditable="true" id="attributeName${i}" class="editable-attribute text-[#111418] text-base font-medium leading-normal">${attributeName}</p>
+                ${frequentButtonHtml}
+              </div>
+              <div class="unit-cost-container">
+                <div class="flex items-center gap-2">
+                  <label class="text-[#111418] text-sm font-normal leading-normal">Unit cost: $</label>
+                  <div class="flex items-center border border-gray-300 rounded p-1">
+                    <button onclick="changeUnitCost('unitCost${i}', false)" class="text-sm px-2 text-[#111418] bg-gray-200 border border-gray-300 rounded-l hover:bg-gray-300">-</button>
+                    <input type="number" id="unitCost${i}" value="${unitCost}" class="text-[#111418] text-sm font-normal leading-normal w-12 text-center focus:outline-none" onchange="updateSlider('slider${i}', 'sliderValue${i}', 'unitCost${i}', 'total${i}')"/>
+                    <button onclick="changeUnitCost('unitCost${i}', true)" class="text-sm px-2 text-[#111418] bg-gray-200 border border-gray-300 rounded-r hover:bg-gray-300">+</button>
+                  </div>
+                  <span>|</span>
+                  <p id="total${i}" class="text-[#111418] text-sm font-normal leading-normal">$0.00</p>
                 </div>
-                <span>|</span>
-                <p id="total${i}" class="text-[#111418] text-sm font-normal leading-normal">$0.00</p>
               </div>
             </div>
             <div class="w-full flex justify-between items-center px-4 pb-4">
@@ -324,6 +484,8 @@
       // Initialize the attribute display on page load
       document.addEventListener('DOMContentLoaded', () => {
         updateAttributesDisplay(); // Show initial attributes
+        document.getElementById('attribute-btn-3').classList.add('active'); // Set button 3 as active by default
+        document.getElementById('attribute-btn-1').classList.remove('active'); // Remove active from button 1
       });
     </script>
   </head>
@@ -338,7 +500,7 @@
       <div class="attribute-selector-container">
         <span class="attribute-selector-label text-[#111418] text-base font-medium">Number of attributes:</span>
         <div class="attribute-selector">
-          <button id="attribute-btn-1" class="active" onclick="changeAttributeCount(1)">1</button>
+          <button id="attribute-btn-1" onclick="changeAttributeCount(1)">1</button>
           <button id="attribute-btn-2" onclick="changeAttributeCount(2)">2</button>
           <button id="attribute-btn-3" onclick="changeAttributeCount(3)">3</button>
           <button id="attribute-btn-4" onclick="changeAttributeCount(4)">4</button>
@@ -372,9 +534,14 @@
           <p class="text-[#111418] text-base font-normal leading-normal flex-1 truncate">Profit</p>
           <div class="shrink-0"><p id="profit" class="text-[#111418] text-base font-normal leading-normal">$0.00</p></div>
         </div>
-        <div class="flex justify-between">
+        <div class="flex justify-between items-center">
           <p class="text-[#111418] text-base font-bold leading-normal flex-1 truncate">Total Project Cost</p>
-          <div class="shrink-0"><p id="grandTotal" class="text-[#111418] text-base font-bold leading-normal">$0.00</p></div>
+          <div class="flex items-center gap-2">
+            <button class="frequent-cost-btn" onclick="setFrequentTotalCost(1000)">$1000</button>
+            <button class="frequent-cost-btn" onclick="setFrequentTotalCost(2000)">$2000</button>
+            <button class="frequent-cost-btn" onclick="setFrequentTotalCost(3000)">$3000</button>
+            <div class="shrink-0"><p id="grandTotal" class="text-[#111418] text-base font-bold leading-normal">$0.00</p></div>
+          </div>
         </div>
       </div>
 
